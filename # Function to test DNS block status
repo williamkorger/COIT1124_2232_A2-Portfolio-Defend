@@ -1,0 +1,13 @@
+# Function to test DNS block status
+function TestDNSBlock {
+    $originalDNS = Get-DnsClientServerAddress -AddressFamily IPv4 | Where-Object {$_.InterfaceAlias -eq "Ethernet 3"} | Select-Object -ExpandProperty ServerAddresses
+    Write-Host "Original DNS server: $originalDNS"
+
+    $malwareIP = Resolve-DnsName -Name "malware.testcategory.com" | Select-Object -ExpandProperty IPAddress
+    if ($malwareIP -ne "0.0.0.0") {
+        Write-Host "Host is not using DNS filtering."
+    }
+    else {
+        Write-Host "Host is using DNS filtering."
+    }
+}
