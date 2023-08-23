@@ -1,3 +1,5 @@
+# defend.ps1
+
 # Function to test DNS block status
 function TestDNSBlock {
     $originalDNS = Get-DnsClientServerAddress -AddressFamily IPv4 | Where-Object {$_.InterfaceAlias -eq "Ethernet 3"} | Select-Object -ExpandProperty ServerAddresses
