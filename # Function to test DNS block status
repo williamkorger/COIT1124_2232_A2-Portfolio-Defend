@@ -11,3 +11,12 @@ function TestDNSBlock {
         Write-Host "Host is using DNS filtering."
     }
 }
+
+# Main script
+$argument = $args[0]
+
+if ($argument -eq "DoH-test") {
+    TestDNSBlock
+}
+elseif ($argument -eq "DoH-enable") {
+    EnableDoH
