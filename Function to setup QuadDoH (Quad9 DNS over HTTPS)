@@ -1,0 +1,83 @@
+<#
+.SYNOPSIS
+Defend.ps1 - A script to perform various security tests and configurations.
+
+.DESCRIPTION
+This script performs tests and configurations related to security measures such as DNS filtering, HTTP blocking,
+and more. It can be used to test and enable DNS over HTTPS (DoH), perform comprehensive security tests, and configure the firewall.
+
+#defend.ps1
+
+# Function to test HTTP blocking
+function Test-HTTPBlocking {
+    $websiteToTest = "https://www.example.com"
+    
+    try {
+        $response = Invoke-WebRequest -Uri $websiteToTest -UseBasicParsing
+        if ($response.StatusCode -eq 200) {
+            Write-Host "Website is accessible. HTTP blocking might not be in place."
+        } else {
+            Write-Host "Website response: $($response.StatusDescription). HTTP blocking might be in place."
+        }
+    } catch {
+        Write-Host "An error occurred while testing: $($error[0].Exception.Message)"
+    }
+}
+
+# Function to test DNS block status
+function TestDNSBlock {
+    $originalDNS = (Get-DnsClientServerAddress -AddressFamily IPv4 | Where-Object {$_.InterfaceAlias -eq "Ethernet 3"}).ServerAddresses
+    Write-Host "Original DNS server: $originalDNS"
+
+    $malwareIP = Resolve-DnsName -Name "malware.testcategory.com" | Select-Object -ExpandProperty IPAddress
+    if ($malwareIP -ne "0.0.0.0") {
+        Write-Host "Host is not using DNS filtering."
+    }
+    else {
+        Write-Host "Host is using DNS filtering."
+    }
+}
+
+# Function to enable DNS over HTTPS
+function EnableDoH {
+    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters" -Name "EnableAutoDoH" -Value 2
+    Write-Host "DNS over HTTPS (DoH) has been enabled. Please restart your computer to apply the changes."
+}
+
+# Main script
+$argument = $args[0]
+
+if ($argument -eq "DoH-test") {
+    TestDNSBlock
+}
+elseif ($argument -eq "DoH-enable") {
+    EnableDoH
+}
+elseif ($argument -eq "Test-HTTPBlocking") {
+    Test-HTTPBlocking
+}
+elseif ($argument -eq "setup-quad-doh") {
+    SetupQuadDoH
+}
+elseif ($argument -eq "reset-doh") {
+    ResetDoH
+}
+elseif ($argument -eq "configure-firewall") {
+    ConfigureFirewall
+}
+elseif ($argument -eq "comprehensive-test") {
+    ComprehensiveTest
+}
+else {
+    Write-Host "Unknown argument: $argument"
+}
+
+# Function to setup QuadDoH (Quad9 DNS over HTTPS)
+function SetupQuadDoH {
+    $quadDoHAddress = "https://dns.quad9.net/dns-query"
+    $interfaceAlias = "Ethernet 3"
+    
+    # Configure DNS over HTTPS using Set-DnsClientServerAddress
+    Set-DnsClientServerAddress -InterfaceAlias $interfaceAlias -ServerAddresses $quadDoHAddress
+    Write-Host "QuadDoH setup completed."
+}
