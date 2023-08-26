@@ -1,0 +1,25 @@
+<#
+.SYNOPSIS
+Defend.ps1 - A script to perform various security tests and configurations.
+
+.DESCRIPTION
+This script performs tests and configurations related to security measures such as DNS filtering, HTTP blocking,
+and more. It can be used to test and enable DNS over HTTPS (DoH), perform comprehensive security tests, and configure the firewall.
+
+#defend.ps1
+
+# Function to test HTTP blocking
+function Test-HTTPBlocking {
+    $websiteToTest = "https://www.example.com"
+    
+    try {
+        $response = Invoke-WebRequest -Uri $websiteToTest -UseBasicParsing
+        if ($response.StatusCode -eq 200) {
+            Write-Host "Website is accessible. HTTP blocking might not be in place."
+        } else {
+            Write-Host "Website response: $($response.StatusDescription). HTTP blocking might be in place."
+        }
+    } catch {
+        Write-Host "An error occurred while testing: $($error[0].Exception.Message)"
+    }
+}
